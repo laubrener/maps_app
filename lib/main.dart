@@ -1,7 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:maps_app/screens/screens.dart';
 
-void main() => runApp(const MyApp());
+import 'blocs/blocs.dart';
+
+void main() {
+  runApp(MultiBlocProvider(
+    providers: [
+      BlocProvider(
+        create: (context) => GpsBloc(),
+      ),
+    ],
+    child: const MyApp(),
+  ));
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -11,6 +23,6 @@ class MyApp extends StatelessWidget {
     return const MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Maps App',
-        home: GPSAccessScreen());
+        home: LoadingScreen());
   }
 }
