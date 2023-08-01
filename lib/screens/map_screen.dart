@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:maps_app/blocs/blocs.dart';
+import 'package:maps_app/views/views.dart';
+import 'package:maps_app/widgets/widgets.dart';
 
 class MapsScreen extends StatefulWidget {
   const MapsScreen({Key? key}) : super(key: key);
@@ -14,7 +17,6 @@ class _MapsScreenState extends State<MapsScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     locationBloc = BlocProvider.of<LocationBloc>(context);
@@ -24,15 +26,34 @@ class _MapsScreenState extends State<MapsScreen> {
 
   @override
   void dispose() {
-    locationBloc.stropFollowingUser();
+    locationBloc.stopFollowingUser();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('MapsScreen'),
+    return Scaffold(
+      body: BlocBuilder<LocationBloc, LocationState>(builder: (context, state) {
+        if (state.lastKnownLocation == null) {
+          return const Center(
+            child: Text('Espere por favor...'),
+          );
+        }
+
+        return SingleChildScrollView(
+          child: Stack(
+            children: [
+              MapView(initialLocation: state.lastKnownLocation!),
+            ],
+          ),
+        );
+      }),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: const Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          BtnCurrentLocation(),
+        ],
       ),
     );
   }

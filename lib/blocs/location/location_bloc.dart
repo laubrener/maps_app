@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart' show LatLng;
 
 part 'location_event.dart';
 part 'location_state.dart';
@@ -11,32 +12,42 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
   StreamSubscription? positionStream;
 
   LocationBloc() : super(const LocationState()) {
-    on<LocationEvent>((event, emit) {
-      // TODO: implement event handler
+    on<OnStartFollowinUser>((event, emit) {
+      emit(state.copyWith(followingUser: true));
+    });
+    on<OnStopFollowinUser>((event, emit) {
+      emit(state.copyWith(followingUser: false));
+    });
+    on<OnNewUserLocationEvent>((event, emit) {
+      emit(state.copyWith(
+        lastKnownLocation: event.newLocation,
+        myLocationHistory: [...state.myLocationHistory, event.newLocation],
+      ));
     });
   }
 
   Future getCurrentPosition() async {
     final position = await Geolocator.getCurrentPosition();
-    print('position: $position');
+    add(OnNewUserLocationEvent(LatLng(position.latitude, position.longitude)));
   }
 
   void startFollowingUser() {
-    print('startFollowingUser');
+    add(const OnStartFollowinUser());
     positionStream = Geolocator.getPositionStream().listen((event) {
       final position = event;
-      print('position: $position');
+      add(OnNewUserLocationEvent(
+          LatLng(position.latitude, position.longitude)));
     });
   }
 
-  void stropFollowingUser() {
+  void stopFollowingUser() {
     positionStream?.cancel();
-    print('stopFollowingUser');
+    add(const OnStopFollowinUser());
   }
 
   @override
   Future<void> close() {
-    stropFollowingUser();
+    stopFollowingUser();
     return super.close();
   }
 }
