@@ -5,7 +5,9 @@ import 'package:maps_app/blocs/blocs.dart';
 
 class MapView extends StatelessWidget {
   final LatLng initialLocation;
-  const MapView({super.key, required this.initialLocation});
+  final Set<Polyline> polylines;
+  const MapView(
+      {super.key, required this.initialLocation, required this.polylines});
 
   @override
   Widget build(BuildContext context) {
@@ -19,14 +21,20 @@ class MapView extends StatelessWidget {
     return SizedBox(
       height: size.height,
       width: size.width,
-      child: GoogleMap(
-        initialCameraPosition: initialCameraPosition,
-        compassEnabled: true,
-        myLocationEnabled: true,
-        zoomControlsEnabled: false,
-        myLocationButtonEnabled: false,
-        onMapCreated: (controller) =>
-            mapBloc.add(OnMapInitializedEvent(controller)),
+      child: Listener(
+        onPointerMove: (pointerMoveEvent) {
+          mapBloc.add(OnStopFollowingUser());
+        },
+        child: GoogleMap(
+          initialCameraPosition: initialCameraPosition,
+          compassEnabled: true,
+          myLocationEnabled: true,
+          zoomControlsEnabled: false,
+          myLocationButtonEnabled: false,
+          onMapCreated: (controller) =>
+              mapBloc.add(OnMapInitializedEvent(controller)),
+          polylines: polylines,
+        ),
       ),
     );
   }
